@@ -71,15 +71,6 @@ def test_plot():
     r.read_annotations(gsf("msdas", "data", "YEAST_annotations_small.pkl"))
     r.show_sequence("DIG1")
 
-def test_MSReader_tcell():
-
-    filename = gsf("msdas", "data", "donor_1_processed.csv")
-
-    # will fail because there are " characters that cannot be interpreted
-    r = MassSpecReader(filename, mode="TCELL", verbose=verbose)
-    #r.merge_peptides() # requires a entry and entry name column
-
-
 def test_reader_yeast_small():
     filename = gsf("msdas", "data", "alpha0.csv")
     r = MassSpecReader(filename, verbose=verbose)
@@ -91,7 +82,7 @@ def test_reader_yeast_small():
     r.pcolor("DIG1", "t")
     r.hist_peptide_sequence_length()
 
-def test_reader_yeast_large():
+def _test_reader_yeast_large():
     filename = gsf("msdas", "data", "Yeast_all_raw.csv")
 
     r = MassSpecReader(filename, cleanup=False,verbose=verbose)

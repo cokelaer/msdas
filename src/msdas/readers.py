@@ -214,14 +214,14 @@ class Cleaner(object):
                 # columns contains strings. Consequently, the entire row is
                 # casted into strings. So, we need to use apply
                 newrow = S.ix[k]
-                metadata = group.ix[v[0]]
+                metadata = group.ix[v[0]].copy()
                 newrow['Psite'] = metadata['Psite']
                 newrow['Sequence'] = metadata['Sequence']
                 newrow['Protein'] = metadata['Protein']
                 newrow['Sequence_Phospho'] = metadata['Sequence_Phospho']
                 try:
                     newrow['Identifier'] = metadata['Identifier']
-                    newrow['Entry'] = metadata['Entry']
+                    newrow['Entry'] = metadata['Entry'].copy()
                     newrow['Entry_name'] = metadata['Entry_name']
                 except Exception:
                     raise Exception("\n Your data is missing one of the following columns: Identifier, Entry and Entry_name not found. Use annotations module to annotate the dataframe")
@@ -454,11 +454,6 @@ class MassSpecReader(Logging, SequenceTools, Cleaner):
     you can populate the :attr:`header_mapping` attribute.
 
 
-    However, some other files contain different kind of conventions. So, we'll
-    try to  enforce the convention above but we also provide facilities to read
-    other formats. For now, the :class:`MassSpecReader` will also understand the
-    following format (for TCell data):
-
     If "Accession" and "Modifications" are found in the header, the accession
     column will be expected to contain these kind of strings (FASTA header)::
 
@@ -622,21 +617,19 @@ class MassSpecReader(Logging, SequenceTools, Cleaner):
                 mode = self.df.Entry_name.ix[0].split("_")[1]
                 self.mode = mode
             else:
-                self.logging.warning("Could not figure out. please provide YEAST or TCELL")
+                self.logging.warning("Could not figure out. please provide YEAST")
         return self._mode
     def _set_mode(self, mode):
         if mode == None:
             raise ValueError("mode cannot be None")
-        assert mode.upper() in ["DEFAULT", "YEAST", "TCELL"], "mode can be either yeast or tcell"
+        assert mode.upper() in ["DEFAULT", "YEAST"], "mode can be yeast "
         if mode.upper() == "DEFAULT":
             mode = "YEAST"
         self._mode = mode.upper()
         if self._mode == "YEAST":
             self._quotechar = "\'"
-        elif self._mode == "TCELL":
-            self._quotechar = "\""
     mode = property(_get_mode, _set_mode,
-                    doc="mode of the Merger (e.g., yeast,  tcell)")
+                    doc="mode of the Merger (e.g., yeast)")
 
     def _set_sequence(self):
         self.debug("set_sequence starting")
@@ -734,34 +727,11 @@ class MassSpecReader(Logging, SequenceTools, Cleaner):
         self.df.columns = columns
 
 
-        if "Sequence" not in self.df.columns:
-            self._set_sequence()
+        self._set_sequence()
 
-        # the TCELL case
-        if "Accession" in self.df.columns and "Modifications" in self.df.columns:
-            self._interpret_tcell()
-        else:
-            self._set_sequence()
 
         self._check_header()
 
-    def _interpret_tcell(self):
-        # in TCELL case, some protein names stored in accession
-        # set the protein column
-        self.df.columns = [x.replace(".", "_").replace(" ", "_") for x in
-                self.df.columns]
-
-        proteins = self.df.Accession.apply(lambda x: self.get_protein_from_fasta_header(x))
-        self.df['Protein'] = proteins
-        ids = self.df.Accession.apply(lambda x: self.get_proteinId_from_fasta_header(x))
-        self.df['ProteinID'] = ids
-
-        m = Modification()
-        m.psite_factory.valid_letters.append('C')
-        #print m.psite_factory.valid_letters
-        self.df['Psite'] = self.df.Modifications.apply(lambda x: m.modif2psites(x))
-
-        #self.df['Psite'] = ["S1"] * len(self.df)
 
     def _check_header(self):
         assert "Protein" in self.df.columns, "Protein must be found in header"
@@ -810,9 +780,6 @@ class MassSpecReader(Logging, SequenceTools, Cleaner):
         if self.df is None:
             self.logging.warning("No data loaded yet. Please populate the attribute *df*, or call read_csv")
 
-        if self._mode == "tcell":
-            self.info("tcell cleanup not implemented. nothing done")
-            return
         # psites seprated by spaces are renamed so that there are now seprated
         # by the ^ (and ) character
         # oxidation psite are also interpreted.
@@ -875,8 +842,8 @@ class MassSpecReader(Logging, SequenceTools, Cleaner):
 
         """
         self.level = self.level
-        if self.mode == None:
-            raise ValueError("mode is not set. mode must be provided as YEAST or TCELL")
+        if self.mode is None:
+            raise ValueError("mode is not set. mode must be provided as YEAST")
         self.logging.info("Reading %s" % filename)
 
         # Read the data. Must work
@@ -885,7 +852,7 @@ class MassSpecReader(Logging, SequenceTools, Cleaner):
 
         #print index_col, sep, quotechar, self.mode
         #sep=None
-        df = pd.read_csv(filename, quotechar=quotechar, index_col=index_col, sep=sep)
+        df = pd.read_csv(filename, quotechar=quotechar, index_col=index_col, sep=sep, engine='python')
         df.dropna(how="all", inplace=True) # ignore empty lines
 
         # spaces need to be removed in the header
@@ -944,8 +911,6 @@ class MassSpecReader(Logging, SequenceTools, Cleaner):
         Psites are also sorted by position e.g., S5^S3 is renamed as S3^S5.
         """
         ptools = PSites(verbose=self.level) # important to provide level
-        if self.mode == "TCELL":
-            ptools.valid_letters.append("C")
 
         # removes spaces
         psites = [ptools.remove_spaces(p) for p in self.df.Psite]
@@ -1010,8 +975,6 @@ class MassSpecReader(Logging, SequenceTools, Cleaner):
         #toremove = count_phosphos+count_oxis != count_psites
         toremove = (count_phosphos != count_psites) & l3
 
-        if self.mode == "TCELL":
-            toremove = []
         self._removed_ambiguous_psites = toremove[:]
 
         self.removed['ambiguous_psites'] = self.df.ix[self._removed_ambiguous_psites].copy()

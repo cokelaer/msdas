@@ -176,10 +176,6 @@ class PSites(Logging):
         # note the * in front of the list of sets to make it a list of arguments
         return all_sites.intersection(*sets)
 
-    def get_psites_tcell(self, sites):
-        """Not implemented yet"""
-        pass
-
     def isvalid(self, psites):
         """Return true is site is using a valid format
 
@@ -329,12 +325,3 @@ class PSites(Logging):
         psites = list(set(psites))
         psites = self.sorted(psites)
         return psites
-
-
-
-
-
-
-
-
-

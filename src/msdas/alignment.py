@@ -20,9 +20,6 @@ overlap or not. Each file is taken as a different experiment and therefore colum
 names that are not standard (Protein, Sequence, Entry, ...) are renamed with a
 prefix (the filenames or prefixes provided by the user.)
 
-There are 2 classes so far dedicated to 2 data sets (YEAST and TCELL). They only differ
-in the expected header.
-
 
 """
 import os
@@ -34,8 +31,7 @@ from msdas.readers import PSites
 from msdas.tools import SequenceTools
 
 
-__all__ = ["MassSpecAlignmentTCell",
-    "MassSpecAlignmentYeast", "MassSpecAlignmentBase"]
+__all__ = ["MassSpecAlignmentYeast", "MassSpecAlignmentBase"]
 
 
 
@@ -104,8 +100,6 @@ class MassSpecAlignmentBase(Logging):
 
     def check_format(self):
         ptools = PSites(verbose=self.level)
-        if self.mode == "TCELL":
-            ptools.valid_letters.append("C")
         for psite in self.df.Psite:
             if ptools.isvalid(psite) == False:
                 raise ValueError("found invalid psite %s" % psite)
@@ -177,7 +171,6 @@ class MassSpecAlignmentTCell(MassSpecAlignmentBase, SequenceTools):
         :param bool verbose: verbosity set on by default
         """
         super(MassSpecAlignmentTCell, self).__init__(filenames, verbose=verbose)
-        self.mode = "TCELL"
         self.prefixes = prefixes
         if self.filenames:
             if prefixes == None:

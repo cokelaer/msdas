@@ -60,11 +60,7 @@ class MSClustering(readers.MassSpecReader):
             :class:`~msdas.readers.MassSpecReader` or an instance of
             :class:`~msdas.readers.MassSpecReader`
             itself.
-        :param str mode: must be either **tcell** or **yeast**. If the first
-            parameter is an instance of :class:`~msdas.readers.MassSpecReader`, the mode is
-            extracted from that object. Otherwise, if a dataframe is provided,
-            you must set the mode to either **yeast** or **tcell**
-
+        :param str mode: must be **yeast**. 
         """
         super(MSClustering,self).__init__(data, verbose=verbose, mode=mode, cleanup=cleanup)
         self._metadata_names.append("cluster")
@@ -85,9 +81,6 @@ class MSClustering(readers.MassSpecReader):
         time measurements are kept (ie. protein columns and non numeric columns
         are ignored).
 
-        If the mode is **tcell**, an additional criteria is used to keep either
-        the CD3only data set of the CD3+CD28 data set.
-
         In the **yeast** case, the criteria to select time measurements is to
         keep columns that starts with the letter **a**.
 
@@ -95,15 +88,6 @@ class MSClustering(readers.MassSpecReader):
         columns starting with "Nor" and containin the tag provided(e.g., onlyCD3)
         indices on time are renamed as 00, 05, 10, 30.
         """
-        if self.mode == "YEAST":
-            return self._get_group_yeast(name)
-        elif self.mode  == "TCELL":
-            return self._get_group_tcell(name, tag=tag)
-        else:
-            raise NotImplementedError("mode must be YEAST or TCELL. Set attribute called mode")
-
-    # TODO Need to define a really common  data structure so that it is independent of yeast/or tcell
-    def _get_group_yeast(self, name):
         if name in self.groups.keys():
             indices = self.groups[name]
             subdf = self.df.ix[indices]
@@ -122,25 +106,6 @@ class MSClustering(readers.MassSpecReader):
         else:
             raise KeyError("name not found")
 
-    def _get_group_tcell(self, name, tag="onlyCD3"):
-        colnames = ["Nor_Unstimulated"] + [x for x in self.df.columns if x.startswith("Nor") and tag in x]
-        print colnames
-        if name in self.groups.keys():
-            indices = self.groups[name]
-            subdf = self.df.ix[indices]
-            subdf = subdf[colnames]
-            subdf = subdf.transpose()
-            subdf.index = ["00", "05", "10", "30"]
-            subdf.columns = self.df.Psite[indices]
-            return subdf
-        elif name==None:
-            subdf = self.df[colnames]
-            subdf = subdf.transpose()
-            subdf.columns = self.df.Psite
-            subdf.index = ["00", "05", "10", "30"]
-            return subdf
-        else:
-            raise KeyError("name not found")
 
     def scale(self, df):
         """scale a df and returns the scaled version.
@@ -356,16 +321,10 @@ class MSClustering(readers.MassSpecReader):
 
         .. warning:: NA are filled with zero for now.
         """
-        if self.mode == "YEAST":
-            data = self.get_group(protein)
-            data.fillna(0, inplace=True)
-            affinity = Affinity(data, method="euclidean",
-                    preference=preference, transpose=True)
-        elif self.mode == "TCELL":
-            data = self.get_group(protein)
-            data.fillna(0, inplace=True)
-            affinity = Affinity(data, method="correlation",
-                    preference=preference, transpose=False)
+        data = self.get_group(protein)
+        data.fillna(0, inplace=True)
+        affinity = Affinity(data, method="euclidean",
+                preference=preference, transpose=True)
 
         # clustering
         import warnings
