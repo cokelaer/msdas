@@ -1,0 +1,45 @@
+
+
+<html>
+
+Temporary directory to provide PKN and MIDAS files related to the YEAST analysis (and fitness plots). 
+
+<hr>
+
+Please download the supplementary data archive in <a href="suppdata.tar.gz"> tar gz file format</a> or <a href="suppdata.zip">zip format</a>, which contains 8 directories. Each directory contains 
+<ul>
+<li> a logic model in SIF and SBML-qual formats called PKN-YEAST.sig and PKN-YEAST.xml respectively </li>
+<li> a MIDAS file containing the data called MD-YEASY.csv</li>
+<li> a R script that loads the PKN, data and use a set of ODE parameters to simulate the model</li>
+<li> a PDF called Fitness.pdf, which is the result of the simulation fitted to the data</li>
+</ul>
+<hr>
+
+Instructions under Linux:
+<pre>
+- tar xvfz suppdata.tar.gz
+- Browse the directory
+- In a given directory (e.g., STE20_All), type "sh create_fitness_plot.sh", which create the PDF Fitness.pdf (already provided but can be reproduced). data.R contains the decision vector for the median model.
+</pre>
+
+You can also view the fitness plot individually here below: 
+<ul>
+<li>STE20_All: <a href="http://www.cellnopt.org/data/yeast/STE20_All/Fitness.pdf">fitness plot</a></li>
+<li>STE20_All_HOG1_GPD1: <a href="http://www.cellnopt.org/data/yeast/STE20_All_HOG1_GPD1/Fitness.pdf">fitness plot</a></li>
+<li>STE20_All_pruned_edges: <a href="http://www.cellnopt.org/data/yeast/STE20_All_pruned_edges/Fitness.pdf">fitness plot</a></li>
+<li>STE20_All_HOG1_GPD1_pruned_edges: <a href="http://www.cellnopt.org/data/yeast/STE20_All_HOG1_GPD1_pruned_edges/Fitness.pdf">fitness plot</a></li>
+
+<li>STE20_T511: <a href="http://www.cellnopt.org/data/yeast/STE20_T511/Fitness.pdf">fitness plot</a></li>
+<li>STE20_T511_HOG1_GPD1: <a href="http://www.cellnopt.org/data/yeast/STE20_T511_HOG1_GPD1/Fitness.pdf">fitness plot</a></li>
+<li>STE20_T511_pruned_edges: <a href="http://www.cellnopt.org/data/yeast/STE20_T511_pruned_edges/Fitness.pdf">fitness plot</a></li>
+<li>STE20_T511_HOG1_GPD1_pruned_edges: <a href="http://www.cellnopt.org/data/yeast/STE20_T511_HOG1_GPD1_pruned_edges/Fitness.pdf">fitness plot</a></li>
+
+
+</ul>
+
+You will need CNORode version 1.5.2 and CellNOptR version 1.11.2 available on <a href="http://www.cellnopt.org/downloads.html">www.cellnopt.org</a>
+
+<hr>
+author: TC 2014
+</html>
+
