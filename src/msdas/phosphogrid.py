@@ -77,7 +77,9 @@ class PhosphoGRID(Requires):
         self.directory = directory
 
         self.dbR_filename = "BIOGRID-PTM-RELATIONSHIPS-3.1.93.ptmrel.txt"
-        self.dfP_filename = "BIOGRID-PTM-15-3.1.93.ptmtab.txt"
+        # original file was huged. We removed sequence, author,pumed that are not used.
+        #self.dfP_filename = "BIOGRID-PTM-15-3.1.93.ptmtab.txt"
+        self.dfP_filename = "BIOGRID-PTM-15-3.1.93_SMALL.ptmtab.txt"
 
     def run(self, gene_names=None):
         """Build dataframe from the relations found in the PhosphoGRID databases
@@ -88,9 +90,14 @@ class PhosphoGRID(Requires):
         """
         #===PhosphoGRID Database
         #Open file with relationships PhosphoGRID tab delimited files
-        dfR = pd.read_csv(self.directory + os.sep + self.dbR_filename,
+        import gzip
+        dbr_arch = gzip.GzipFile(self.directory+os.sep+self.dbR_filename+'.gz')
+        dbp_arch = gzip.GzipFile(self.directory+os.sep+self.dfP_filename+'.gz')
+        import StringIO
+
+        dfR = pd.read_csv(StringIO.StringIO(dbr_arch.read(self.dbR_filename)),
                           sep='\t', header=0)
-        dfP = pd.read_csv(self.directory + os.sep + self.dfP_filename,
+        dfP = pd.read_csv(StringIO.StringIO(dbp_arch.read(self.dfP_filename)),
                           sep='\t', header=0)
 
         #===Merge PhosphoGRID data frame using PTMID as matching column
