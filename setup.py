@@ -66,8 +66,8 @@ setup(
     package_dir = {'':'src'},
     packages = ["msdas"],
 
-    install_requires = ["easydev>=0.8.5", "numpy", "matplotlib", "scikit-learn",
-        "bioservices>=1.2.3", "pandas>=0.13", "cno"],
+    install_requires = ["easydev<=0.8.5", "numpy", "matplotlib", "scikit-learn",
+        "bioservices>=1.2.3", "pandas<=0.16.1", "cno"],
     # uncomment if you have share/data files
     data_files = datafiles,
 
