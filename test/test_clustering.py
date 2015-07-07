@@ -36,14 +36,6 @@ def test_clustering_affinity():
     c.plot_vectors("DIG1", normalise=False,  scale=True, legend=False)
 
 
-def test_clustering_tcell():
-    from easydev import gsf
-    filename = gsf("msdas", "data", "tcell_sample.csv")
-    m = MassSpecReader(filename, mode="TCELL", verbose=verbose)
-    c = clustering.MSClustering(m)
-    c.get_group("BCLF1-2")
-    #c.run_affinity_propagation_clustering(protein=None,
-    #        preference=-30)
 
 
 

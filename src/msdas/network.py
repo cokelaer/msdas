@@ -6,7 +6,7 @@ Created on Fri Feb 21 16:02:50 2014
 """
 from readers import MassSpecReader
 from cno import CNOGraph
-#from cno.io.multicnograph import  CNOGraphMultiEdges
+from cno.io.multigraph import  CNOGraphMultiEdges
 import pylab
 import pandas as pd
 
@@ -47,7 +47,6 @@ class NetworkFromUniProt(object):
             self.annotations = annotations.copy()
         self.verbose=verbose
 
-
     def get_cnograph_intact(self, label="entry_name"):
         """Return cnograph made of the protein names found in the interactions
         of the annotations.
@@ -70,14 +69,22 @@ class NetworkFromUniProt(object):
         assert label in ["entry_id", "entry_name"]
         c = CNOGraph()
         interactions = self.annotations["Interacts with"]
+        
+        # add all nodes
+        c.add_nodes_from(interactions.index)
+
+        # some have no interactions in which case, it is filled with NaN. let us drop those
+        # entries. 
+        interactions = interactions.dropna()
         indices = interactions.index
-        for i,index in enumerate(indices):
+        for i, index in enumerate(indices):
             print("{}/{}".format(i+1, len(indices)))
-            for interaction in interactions.ix[index]:
+            these_interactions = interactions.ix[index].split(';')
+            these_interactions = [x.strip() for x in these_interactions]
+            for interaction in these_interactions:
                 if interaction == "Itself":
                     interaction = index
                 c.add_reaction("{}={}".format(index, interaction))
-        c.add_nodes_from(interactions.index)
 
         if label == "entry_id":
             c._signals = list(self.annotations.index)
@@ -87,11 +94,11 @@ class NetworkFromUniProt(object):
             from bioservices import UniProt
             u = UniProt(verbose=self.verbose)
             mapping = u.multi_mapping(fr="ACC", to="ID", query=c.nodes())
-            for k,v in mapping.iteritems():
+            for k, v in mapping.iteritems():
                 if len(mapping[k])>1:
                     print("ambigous case {} with more than 1 mapping. will take only first".format(k))
-                mapping[k] = v[0].split("_")[0]
-            c = c.rename_node(mapping)
+                mapping[str(k)] = str(v[0].split("_")[0])
+            c.relabel_nodes(mapping)
 
             measured = [x.split("_")[0] for x in self.annotations['Entry name']]
             c._signals = measured

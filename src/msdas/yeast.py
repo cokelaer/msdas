@@ -195,7 +195,8 @@ class YEAST2MIDAS(MassSpecReader, YEAST):
         self._cv_buf = pd.DataFrame(self.replicates.get_coefficient_variation())
 
 
-        self.cluster = clustering.MSClustering(self, fillna=False, verbose=False)
+        # here, we set na to zero, just for the clustering
+        self.cluster = clustering.MSClustering(self, fillna=True, verbose=False)
 
         # FIXME: yeast.df is a reference so if changed, it affects the user parameter
 
@@ -319,7 +320,6 @@ class YEAST2MIDAS(MassSpecReader, YEAST):
         # 4 NAs
         self.df.drop(self['SSK1_S110'].index[0], inplace=True)
         self.df.drop(self['SSK1_S673'].index[0], inplace=True)
-
 
 
         # STE20 clustering is difficult despite 9 peptides
@@ -471,6 +471,7 @@ class YEAST2MIDAS(MassSpecReader, YEAST):
                 psite = list(self.df.ix[self.groups[protein]]['Identifier'])
                 psites_tokeep.append(psite[0])
             else:
+                
                 af = clustering.Affinity(self.get_group_psite(protein),
                     method="euclidean", transpose=True, preference=preference,
                     verbose=False)
@@ -552,7 +553,7 @@ class YEAST2MIDAS(MassSpecReader, YEAST):
             pass
         return newdf
 
-    def export2midas(self, filename, preference=-1):
+    def to_midas(self, filename, preference=-1):
         """Given a dataframe, export measurements into MIDAS format
 
         :param str filename:
@@ -569,7 +570,7 @@ class YEAST2MIDAS(MassSpecReader, YEAST):
         ::
 
             y = yeast.YEAST2MIDAS(get_yeast_small_data(), get_yeast_raw_data() )
-            m = y.export2midas(df, "MD-test.csv")
+            m = y.to_midas(df, "MD-test.csv")
 
             from cno import XMIDAS
             m = XMIDAS("MD-test.csv")
@@ -577,19 +578,18 @@ class YEAST2MIDAS(MassSpecReader, YEAST):
         """
         # create a midas builder
         df = self.get_df_exemplars(preference=preference)
-        m = self._get_midas_builder_from_df(df)
+        mb = self._get_midas_builder_from_df(df)
         # and save to
-        m.export2midas(filename)
+        m = mb.xmidas
+        m.to_midas(filename)
         return m
-
 
     def _get_midas_builder_from_df(self, df):
         # exports alpha=0, as one condition, NaCl=0 as 1 conditions and
         # alpha=NaCl= on (where t_alpha = t_NaCl) as a thrid condition
-        from cno import MidasBuilder
+        from cno import MIDASBuilder
         m = MIDASBuilder()
-
-
+        from cno.io.measurements import Measurement as Experiment
 
         _measures = ['a0_t0', 'a0_t1', 'a0_t5', 'a0_t10', 'a0_t20', 'a0_t45',
                 'a1_t1', 'a5_t5', 'a10_t10', 'a20_t20', 'a45_t45',
@@ -606,35 +606,35 @@ class YEAST2MIDAS(MassSpecReader, YEAST):
                     # special case that need to be added 3 times i.e. a0_t0
                     time = 0
                     stimuli = {"a":1, "NaCl":1}
-                    e = midas.Experiment(psite, time, stimuli, inhibitors, value)
-                    m.add_experiment(e)
+                    e = Experiment(psite, time, stimuli, inhibitors, value)
+                    m.add_measurements([e])
 
                     stimuli = {"a":1, "NaCl":0}
-                    e = midas.Experiment(psite, time, stimuli, inhibitors, value)
-                    m.add_experiment(e)
+                    e = Experiment(psite, time, stimuli, inhibitors, value)
+                    m.add_measurements([e])
 
                     stimuli = {"a":0, "NaCl":1}
-                    e = midas.Experiment(psite, time, stimuli, inhibitors, value)
-                    m.add_experiment(e)
+                    e = Experiment(psite, time, stimuli, inhibitors, value)
+                    m.add_measurements([e])
                 elif col.startswith("a0"):
                     # case alpha=0, NaCl=1 e.g., a0_t5
                     time = int(nacl[1:])
                     stimuli = {"a":0, "NaCl":1}
-                    e = midas.Experiment(psite, time, stimuli, inhibitors, value)
-                    m.add_experiment(e)
+                    e = Experiment(psite, time, stimuli, inhibitors, value)
+                    m.add_measurements([e])
                 elif col.endswith("t0"):
                     # case alpha=1, NaCl=0 e.g., a5_t0
                     time = int(alpha[1:])
                     stimuli = {"a":1, "NaCl":0}
-                    e = midas.Experiment(psite, time, stimuli, inhibitors, value)
-                    m.add_experiment(e)
+                    e = Experiment(psite, time, stimuli, inhibitors, value)
+                    m.add_measurements([e])
                 else:
                     # case alpha=1, NaCl=1 e.g. a5_t5
                     time = int(alpha[1:])
                     # could be time = int(nacl[1:])
                     stimuli = {"a":1, "NaCl":1}
-                    e = midas.Experiment(psite, time, stimuli, inhibitors, value)
-                    m.add_experiment(e)
+                    e = Experiment(psite, time, stimuli, inhibitors, value)
+                    m.add_measurements([e])
         return m
 
 
@@ -664,7 +664,7 @@ class YEAST2MIDAS(MassSpecReader, YEAST):
             psites = [psite.replace("^", "~") for psite in psites]
             psites = [psite.replace("+", "-") for psite in psites]
             self.logging.debug(protein ,psites)
-            if len(psites) == 1:
+            if psites is not None and len(psite) == 1:
                 # just rename the node in the PKN if found
                 if protein in c.nodes():
                     #print("Warning. renaming %s into %s" % (protein, psites[0]))
@@ -689,8 +689,6 @@ class YEAST2MIDAS(MassSpecReader, YEAST):
         df.index = self.df.Identifier
         c = self.get_expanded_cnograph(pkn, df)
 
-
-
         # midas
         m = self.get_midas()
         m.df.columns = [x.replace("^", "~") for x in m.df.columns]
@@ -700,12 +698,14 @@ class YEAST2MIDAS(MassSpecReader, YEAST):
         #FIXME: bug in cellnopt.core.xmidas need to set cellline manually if created from mifdasbuilder
         m._cellLine = "undefined"
         # FIXME: make sure the order is correct
-        m.experiments.columns = ["NaCl", "a"]
+        #m.experiments.columns = ["NaCl", "a"]
 
         df = self.get_cv()
         errors = self._get_midas_builder_from_df(df).xmidas
         errors.df.columns = [x.replace("^", "~") for x in errors.df.columns]
         errors.df.columns = [x.replace("+", "-") for x in errors.df.columns]
+
+        # FIXME: should use the mapping here
         errors.df = errors.df[m.df.columns]
         errors.create_empty_simulation() # FIXME required to update sim and have corret plotting
 
@@ -770,7 +770,6 @@ class YEAST2MIDAS(MassSpecReader, YEAST):
         #FIXME: bug in cellnopt.core.xmidas need to set cellline manually if created from mifdasbuilder
         m._cellLine = "undefined"
         # FIXME: make sure the order is correct
-        m.experiments.columns = ["NaCl", "a"]
         #m.save(output_midas_filename)
 
         # get the errors, filter with respect to the species in m

@@ -219,12 +219,9 @@ class Cleaner(object):
                 newrow['Sequence'] = metadata['Sequence']
                 newrow['Protein'] = metadata['Protein']
                 newrow['Sequence_Phospho'] = metadata['Sequence_Phospho']
-                try:
-                    newrow['Identifier'] = metadata['Identifier']
-                    newrow['Entry'] = metadata['Entry'].copy()
-                    newrow['Entry_name'] = metadata['Entry_name']
-                except Exception:
-                    raise Exception("\n Your data is missing one of the following columns: Identifier, Entry and Entry_name not found. Use annotations module to annotate the dataframe")
+                newrow['Identifier'] = metadata['Identifier']
+                newrow['Entry'] = metadata['Entry']
+                newrow['Entry_name'] = metadata['Entry_name']
 
                 tobeadded.append(newrow)
                 todrop.extend(v)
@@ -300,12 +297,12 @@ class Cleaner(object):
         S = g.aggregate(sum) # compute some before the loop. This is much 2,3 times faster than a apply function
         self.logging.info("Merging {} rows into {} groups.".format(len(self.df), len(g.groups)))
 
-        print("##############")
-        print(len(groups))
+        #print("##############")
+        #print(len(groups))
         NN = len(groups)
         count = 0
         for k, indices in groups.iteritems():
-            print(k, count)
+            #print(k, count)
             count += 1
 
 
@@ -741,26 +738,27 @@ class MassSpecReader(Logging, SequenceTools, Cleaner):
 
     def boxplot(self, index=None, logy=True):
         """A simple boxplot of the data using logy
-
+     
         :param index: you can rearrange the ordering of the axis column or select a subset
             by providing a list of indices.
         :param logy: set y-axis with log scale
-
+     
         .. plot::
-
+    
             from msdas import *
             m = MassSpecReader(get_yeast_small_data())
             m.boxplot()
-
-
+   
+  
         """
         if index == None:
-            self.df.boxplot(rot=90)
+            self.df.boxplot(rot=90, return_type='axes')
         else:
-            self.df[index].boxplot(rot=90)
+            self.df[index].boxplot(rot=90, return_type='axes')
 
         if logy:
             pylab.semilogy()
+ 
 
 
     def cleanup(self):
@@ -854,6 +852,10 @@ class MassSpecReader(Logging, SequenceTools, Cleaner):
         #sep=None
         df = pd.read_csv(filename, quotechar=quotechar, index_col=index_col, sep=sep, engine='python')
         df.dropna(how="all", inplace=True) # ignore empty lines
+        
+        # replaces None by NA
+        import numpy as np
+        df.fillna(np.NaN, inplace=True)
 
         # spaces need to be removed in the header
         df.columns = [col.strip() for col in df.columns]
@@ -871,7 +873,6 @@ class MassSpecReader(Logging, SequenceTools, Cleaner):
             self.df[col] = self.df[col].map(clean_func)
 
         self._interpret_header()
-
 
     def remove_ambiguities(self):
         """
@@ -1135,7 +1136,7 @@ class MassSpecReader(Logging, SequenceTools, Cleaner):
         pylab.xlabel("Sequence length")
         pylab.ylabel("#")
 
-    def pcolor(self, protein=None, tag="X", fillna=None, vmax=None, vmin=None,
+    def pcolor(self, protein=None, tag="t", fillna=None, vmax=None, vmin=None,
                cmap="hot_r", fontsize_yticks=8):
         """
 
@@ -1174,7 +1175,7 @@ class MassSpecReader(Logging, SequenceTools, Cleaner):
             vmax = data.max().max()
         if vmin == None:
             vmin = data.min().min()
-        mask = np.ma.array(data.as_matrix(), mask=np.isnan(data.as_matrix()))
+        mask = np.ma.array(data.as_matrix(), mask=data.isnull())
 
         cmap = pylab.get_cmap(cmap)
         cmap.set_bad("grey", 1)

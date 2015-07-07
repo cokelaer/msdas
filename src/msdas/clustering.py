@@ -331,7 +331,7 @@ class MSClustering(readers.MassSpecReader):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             # this raises annoying warnings
-            res = self.df.query("Identifier in data.columns", engine="python")
+            res = self.df.query("Identifier in @data.columns", engine="python")
 
         indices = res.index
 

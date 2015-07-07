@@ -14,7 +14,7 @@ def test_network_uniprot():
     c = n.get_cnograph_intact(label="entry_id")
     c = n.get_cnograph_intact()
     c.plot()
-    c.export2sif("PKN-uniprot.sif")
+    c.to_sif("PKN-uniprot.sif")
 
     names = list(set(r.df.Protein))
     n = network.CombineNetworks( 

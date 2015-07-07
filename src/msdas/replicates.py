@@ -95,6 +95,9 @@ class Replicates(readers.MassSpecReader):
         super(Replicates, self).__init__(data, verbose=verbose, cleanup=cleanup,
             merge_peptides=False)
 
+        # hack. should be in readers but could not find where.
+        self.df.fillna(np.nan, inplace=True)
+
         if "count_phospho" in self.df.columns:
             del self.df['count_phospho']
 
@@ -128,7 +131,7 @@ class Replicates(readers.MassSpecReader):
         if tag not in self.get_unique_measurement_name():
             raise ValueError("invalid tag. call get_unique_measurement_name)")
 
-        if indices == None:
+        if indices is None:
             indices = self.df.index
         if len(indices) > 200:
             self.logging.info("boxplot with more than 200 variables will be slow. You can stop the plotting pressing CTRL+C")
@@ -141,7 +144,8 @@ class Replicates(readers.MassSpecReader):
         # does not work; use xticks instead : df.columns = self.df.ix[df.columns].Identifier.values
         colnames = self.df.ix[df.columns].Identifier.values
         pylab.clf()
-        df.boxplot(rot=90)
+        self.dfdf = df
+        df.boxplot(rot=90, return_type='axes')
         pylab.semilogy()
         pylab.xticks(range(0,len(indices)), colnames, rotation=90,fontsize=fontsize)
         pylab.tight_layout()

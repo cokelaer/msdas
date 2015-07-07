@@ -24,6 +24,7 @@ import os
 import pandas as pd
 from tools import Requires
 
+
 __all__ = ["PhosphoGRID"]
 
 
@@ -104,7 +105,7 @@ class PhosphoGRID(Requires):
         dfRP["Site"] = dfRP.Residue+dfRP.Position.map(str)
 
         #Yeast dataframe
-        #Select unique  gene names
+        #Select unique gene names
         if gene_names == None:
             filename = self.directory + os.sep + "RawData.csv"
             df = pd.read_csv(filename)
@@ -113,7 +114,8 @@ class PhosphoGRID(Requires):
             pass
 
         #===Merge Yeast experimental dataset with PhosphoGRID
-        #Intersection between both datasets querying  by Standard name == OfficialSymbol both in regulators and substrates
+        # Intersection between both datasets querying  by Standard 
+        # name == OfficialSymbol both in regulators and substrates
         columns=["OfficialSymbol_reg","RelationshipCode","OfficialSymbol_tgt",
                  "Relationship","Identity","Site"]
         out = pd.DataFrame(columns=columns)

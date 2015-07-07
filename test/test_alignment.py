@@ -9,18 +9,6 @@ def test_alignmentbase():
     m.df = pd.DataFrame({'Protein':["ZAP70"]})
     print(m) 
 
-def test_peptides_tcell():
-    filename = get_tcell_filenames()
-    #gsf("msdas", "data", "tcell_sample.csv")
-    m = alignment.MassSpecAlignmentTCell(filename)
-    m.check_format()
-    m.df.Psite.ix[0] = "A3"
-    try:
-        m.check_format()
-        assert False
-    except:
-        assert True
-
 
 
 

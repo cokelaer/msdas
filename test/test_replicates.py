@@ -3,24 +3,23 @@ from easydev import gsf
 
 filename = gsf("msdas", "data", "YEAST_raw_sample.csv")
 
+
 def test_replicates_plotting():
     r = replicates.Replicates(filename, verbose=False)
 
     r.boxplot_replicates_by_experiment("a0_t0")
     r.boxplot_replicates_by_experiment("a0_t0", indices=r.df.index[0:20])
 
-
     r.hist_coefficient_variation()
     r.plot_mu_sigma()
-
 
     r.hist2d_mu_versus_cv()
     r.hist2d_errors_versus_cv()
 
-
     r.hist_na_per_experiments()
     r.pcolor_na()
     assert r == r.copy()
+
 
 def test_yeast():
     r = replicates.ReplicatesYeast(get_yeast_raw_data(), verbose=False)

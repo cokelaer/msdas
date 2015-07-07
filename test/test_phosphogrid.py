@@ -1,5 +1,5 @@
 from msdas import *
-
+from easydev import TempFile
 
 
 def test_phosphogrid():
@@ -7,7 +7,10 @@ def test_phosphogrid():
     gene_names = set(list(m.df.Protein))
     p = phosphogrid.PhosphoGRID(directory = "../share/data")
     p.run(gene_names=gene_names)
-    p.export2sif()
+    fh = TempFile(suffix='.sif')
+    p.export2sif(filename=fh.name)
     p.plot()
-
-    p.run()
+    #p.run()
+    
+    
+    fh.delete()

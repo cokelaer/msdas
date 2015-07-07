@@ -93,10 +93,10 @@ class Annotations(MassSpecReader):
         from msdas import *
         r = readers.MassSpecReader(get_yeast_raw_data())
         # this takes about 10 minutes depending on the connection for 1600 unique protein names
-        a.get_uniprot_entries()
-        a.set_annotations()
-        a.to_pickle(tag="test") # creates a file called YEAST_annotations_test.pkl
-        a.to_csv("data.csv")
+        r.get_uniprot_entries()
+        r.set_annotations()
+        r.to_pickle(tag="test") # creates a file called YEAST_annotations_test.pkl
+        r.to_csv("data.csv")
 
     Next time, just type::
 
@@ -139,7 +139,7 @@ class Annotations(MassSpecReader):
 
         """
         super(Annotations, self).__init__(data=data, verbose=verbose, **kargs)
-        if organism == None:
+        if organism is None:
             raise ValueError("organism must be provided e.g. YEAST, HUMAN")
 
         self.organism = organism
@@ -428,7 +428,7 @@ class Annotations(MassSpecReader):
 
         if len(entries)==0:
             self.warning("No new entries found. Your annotations dataframe is already up-to-date")
-            self.annotations.drop_duplicates(cols="Entry name", inplace=True)
+            self.annotations.drop_duplicates(subset="Entry name", inplace=True)
             self._append_uniprot_entry_names_to_df()
             return
 
@@ -452,7 +452,7 @@ class Annotations(MassSpecReader):
 
         #indices are the uniprot entry. Some may be identical with slightly different columns
         # but the entry name should be unique. Here, we keep the first instance of each entry
-        self.annotations.drop_duplicates(cols="Entry name", inplace=True)
+        self.annotations.drop_duplicates(subset="Entry name", inplace=True)
         self._append_uniprot_entry_names_to_df()
 
     def to_pickle(self, tag=None, overwrite=False):
@@ -529,9 +529,8 @@ class Annotations(MassSpecReader):
 
         count = [goids.count(x) for x in uniq_goids]
         df = pd.DataFrame({'name':names, 'size':count}, index=range(0, len(uniq_goids)))
-
         if N:
-            subdf = df[df.size>N].set_index("name")
+            subdf = df[df['size']>N].set_index("name")
         subdf.sort("size").plot(kind="barh", **kargs)
         if tight_layout:
             pylab.tight_layout()

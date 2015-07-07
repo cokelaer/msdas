@@ -62,7 +62,6 @@ def test_plot():
     filename = yeast.get_yeast_filenames()[0]
     r = MassSpecReader(filename, verbose=verbose)
     r.pcolor("DIG1")
-    r.boxplot()
     r.status()
     r.plot_timeseries("DIG1_S142")
 
