@@ -297,7 +297,8 @@ class YEAST2MIDAS(MassSpecReader, YEAST):
 
         self.cluster = clustering.MSClustering(self, fillna=False, cleanup=False)
 
-    def cleanup_june2(self):
+    # ???? obosloet ???? 
+    def __cleanup_june2(self):
         # 'GPD1'  'S23+S24+S27', 'S23+S24+S25+S27', 'S24^S27'
         #can be clustered. We keep S14^S27
         print("WARNING: should be fixed to not use indices but names")
@@ -645,12 +646,13 @@ class YEAST2MIDAS(MassSpecReader, YEAST):
             format.
         :param dataframe df: a dataframe with protein/psites names as indices
             like the output of :meth:`get_df_exemplars`.
-
-
-        df = y.get_df_exemplars(-1)
-        y.get_expanded_cnograph("../../share/data/PKN-yeastScaffold.sif", df)
-
         :return: a CNOGraph instance
+
+        ::
+
+            df = y.get_df_exemplars(-1)
+            y.get_expanded_cnograph("../../share/data/PKN-yeastScaffold.sif", df)
+
 
         """
         from cno import CNOGraph

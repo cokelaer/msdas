@@ -7,7 +7,7 @@ import glob
 
 _MAJOR               = 0
 _MINOR               = 9
-_MICRO               = 0
+_MICRO               = 1
 version              = '%d.%d.%d' % (_MAJOR, _MINOR, _MICRO)
 release              = '%d.%d' % (_MAJOR, _MINOR)
 
@@ -47,7 +47,7 @@ setup(
     maintainer_email = metainfo['authors']['main'][1],
     author           = metainfo['authors']['main'][0],
     author_email     = metainfo['authors']['main'][1],
-    long_description = open("README.txt").read(),
+    long_description = open("README.rst").read(),
     keywords         = metainfo['keywords'],
     description      = metainfo['description'],
     license          = metainfo['license'],
@@ -66,8 +66,8 @@ setup(
     package_dir = {'':'src'},
     packages = ["msdas"],
 
-    install_requires = ["easydev<=0.8.5", "numpy", "matplotlib", "scikit-learn",
-        "bioservices>=1.2.3", "pandas<=0.16.1", "cno"],
+    install_requires = ["easydev>=0.8.5", "numpy", "matplotlib", "scikit-learn",
+        "bioservices>=1.2.3", "pandas>=0.16.1", "cno"],
     # uncomment if you have share/data files
     data_files = datafiles,
 

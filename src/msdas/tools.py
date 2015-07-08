@@ -15,11 +15,12 @@
 ##############################################################################
 from msdas.psites import PSites
 
+
 __all__ = ["Requires", "SequenceTools", "Modification"]
+
 
 # just a simple class to mimic behaviour of easydev.decorators.requires decorator
 # this issue with the decorator is that it prevents sphinx to see the parametes/arguments
-
 class Requires(object):
     """A fake decorator to require attribute to be present in a class instance.
 

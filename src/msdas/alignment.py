@@ -143,7 +143,8 @@ class MassSpecAlignmentBase(Logging):
         return txt
 
 
-class MassSpecAlignmentTCell(MassSpecAlignmentBase, SequenceTools):
+# not used anymore
+class _MassSpecAlignmentTCell(MassSpecAlignmentBase, SequenceTools):
     """Align several Mass Spectrometry data files.
 
     See :class:`MassSpecAlignmentBase` for the list of columns to be found to
@@ -251,7 +252,7 @@ class MassSpecAlignmentYeast(MassSpecAlignmentBase):
                             prefixes = ["a0", "a1", "a5", "a10" "a20", "a45])
 
     You can then create a MassSpecReader instance from the dataframe just
-    created and save it to a file                              ::
+    created and save it to a file::
 
         r = MassSpecReader(m)
         r.to_csv("test_align.csv")
