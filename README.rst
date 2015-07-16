@@ -1,7 +1,7 @@
 MSDAS: Mass-spectrometry Data Analysis Software
 ########################################################
 :Date: July 2015
-:Author: Thomas Cokelaer
+:Author: Thomas Cokelaer, Marti Bernardo Faura, Claudia Hernandes
 :Documentation: Either browse the source code, or the doc directory or for a reference
     guide see http://pythonhosted.org/msdas/
     
